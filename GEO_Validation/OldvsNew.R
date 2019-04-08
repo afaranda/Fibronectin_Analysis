@@ -1,0 +1,70 @@
+options(echo=T)
+options(digits=6)
+# setwd("/Users/afaranda/Documents/GEO_Submission/GSE111430_RAW")
+a<-read.table(
+	"../GeneCount.tsv",
+	header=T, quote="", sep='\t',
+	stringsAsFactors=F
+)
+
+b<-read.table(
+        "../GeneCount.ReCalcRPKM.tsv",
+        header=T, quote="", sep='\t',
+        stringsAsFactors=F
+)
+
+files<-list.files(pattern="tab.txt$")
+
+compare<-function(f=files, all=a){
+	for ( i in f ) {
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)
+		
+		dup<-unique(
+			c(
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))
+			)
+		)
+		
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))
+		print(names(df))
+		dfc<-c('GeneID', 
+			paste(s,'_GeneCount.raw', sep=''), 
+			paste(s,'_GeneCount.rpkm', sep='')
+		)
+		
+		allc<-c(
+			'GeneID', 
+			paste(s,'_GeneCount', sep=''), 
+			paste(s,'_RPKM', sep='')
+		)
+		
+		# Most GeneID are unique -- limit check to those
+		check<-merge(
+			df[!(df$GeneID %in% dup), dfc],
+			all[!(all$GeneID %in% dup), allc],
+			by='GeneID'
+		)
+		check
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]
+		check$rpkmDiff<-round(check[,dfc[3]],9) - round(check[,allc[3]], 9)
+		
+		ord<-c(
+			"GeneID",
+			allc[2],
+			dfc[2],
+			'countDiff',
+			allc[3],
+			dfc[3],
+			'rpkmDiff'
+		)
+		
+		print(head(check[,ord]))
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))
+		print(paste("Sum, rpkmDiff:", sum(abs(check$rpkmDiff))))
+	}
+}
+
+compare(files, all=a)
+compare(files, all=b)

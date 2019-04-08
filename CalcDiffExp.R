@@ -113,7 +113,7 @@ calcRPKM<-function(df, rSuffix="_RPKM", cSuffix="_GeneCount", lenCol="CodingLeng
 }
 
 df<-calcRPKM(df)
-write.table(df, "GeneCount.ReCalcRPKM.tsv")
+write.table(df, "GeneCount.ReCalcRPKM.tsv", row.names=F, quote=F, sep="\t")
 
 # Calculate Differential Expression based on 
 for( g in pairwiseContrasts){

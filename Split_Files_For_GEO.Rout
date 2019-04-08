@@ -1,0 +1,161 @@
+
+R version 3.3.3 (2017-03-06) -- "Another Canoe"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> # Purpose: Split columns from GeneCount.ReCalcRPKM.tsv into individual samples
+> # Created: March 5, 2019
+> # Author: Adam Faranda
+> 
+> # Setup Environment
+> options(echo=F)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+[1] "S1.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S1_GeneCount    S1_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           37  5.7148151
+2 chr1 1500015O10Rik  43730602  43742564          888          151 17.5182319
+3 chr1 1700001G17Rik  33669824  33670712          889            3  0.3476528
+4 chr1 1700007P06Rik 187125138 187127852          823            0  0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034           31  3.0886411
+6 chr1 1700015E13Rik 170308861 170312125          713           14  2.0228552
+[1] "S10.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S10_GeneCount   S10_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667            37  5.7148151
+2 chr1 1500015O10Rik  43730602  43742564          888           151 17.5182319
+3 chr1 1700001G17Rik  33669824  33670712          889             3  0.3476528
+4 chr1 1700007P06Rik 187125138 187127852          823             0  0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034            31  3.0886411
+6 chr1 1700015E13Rik 170308861 170312125          713            14  2.0228552
+[1] "S11.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S11_GeneCount   S11_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667            41  6.6478773
+2 chr1 1500015O10Rik  43730602  43742564          888           144 17.5377753
+3 chr1 1700001G17Rik  33669824  33670712          889             2  0.2433062
+4 chr1 1700007P06Rik 187125138 187127852          823             3  0.3942270
+5 chr1 1700009P17Rik 171121661 171126967         1034             9  0.9413409
+6 chr1 1700015E13Rik 170308861 170312125          713             7  1.0617774
+[1] "S12.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S12_GeneCount   S12_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667            50  8.1026239
+2 chr1 1500015O10Rik  43730602  43742564          888           252 30.6739062
+3 chr1 1700001G17Rik  33669824  33670712          889             3  0.3647548
+4 chr1 1700007P06Rik 187125138 187127852          823             0  0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034            27  2.8224401
+6 chr1 1700015E13Rik 170308861 170312125          713             8  1.2127798
+[1] "S13.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S13_GeneCount  S13_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667            41 6.6980275
+2 chr1 1500015O10Rik  43730602  43742564          888            78 9.5712915
+3 chr1 1700001G17Rik  33669824  33670712          889             3 0.3677125
+4 chr1 1700007P06Rik 187125138 187127852          823             3 0.3972010
+5 chr1 1700009P17Rik 171121661 171126967         1034            30 3.1614740
+6 chr1 1700015E13Rik 170308861 170312125          713            12 1.8339210
+[1] "S14.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S14_GeneCount  S14_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667            33 5.4832812
+2 chr1 1500015O10Rik  43730602  43742564          888            57 7.1140072
+3 chr1 1700001G17Rik  33669824  33670712          889             0 0.0000000
+4 chr1 1700007P06Rik 187125138 187127852          823             7 0.9426503
+5 chr1 1700009P17Rik 171121661 171126967         1034            25 2.6796118
+6 chr1 1700015E13Rik 170308861 170312125          713             9 1.3989603
+[1] "S15.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S15_GeneCount S15_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667            52 9.316387
+2 chr1 1500015O10Rik  43730602  43742564          888            32 4.306327
+3 chr1 1700001G17Rik  33669824  33670712          889             0 0.000000
+4 chr1 1700007P06Rik 187125138 187127852          823             0 0.000000
+5 chr1 1700009P17Rik 171121661 171126967         1034            42 4.853989
+6 chr1 1700015E13Rik 170308861 170312125          713             2 0.335205
+[1] "S2.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S2_GeneCount    S2_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           27  4.3061229
+2 chr1 1500015O10Rik  43730602  43742564          888          138 16.5315895
+3 chr1 1700001G17Rik  33669824  33670712          889            2  0.2393188
+4 chr1 1700007P06Rik 187125138 187127852          823            1  0.1292554
+5 chr1 1700009P17Rik 171121661 171126967         1034           24  2.4691029
+6 chr1 1700015E13Rik 170308861 170312125          713           48  7.1614374
+[1] "S3.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S3_GeneCount    S3_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           30  5.1491695
+2 chr1 1500015O10Rik  43730602  43742564          888          142 18.3069984
+3 chr1 1700001G17Rik  33669824  33670712          889            0  0.0000000
+4 chr1 1700007P06Rik 187125138 187127852          823            1  0.1391047
+5 chr1 1700009P17Rik 171121661 171126967         1034           23  2.5465316
+6 chr1 1700015E13Rik 170308861 170312125          713           47  7.5465785
+[1] "S4.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S4_GeneCount   S4_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           24 4.4591162
+2 chr1 1500015O10Rik  43730602  43742564          888           57 7.9547269
+3 chr1 1700001G17Rik  33669824  33670712          889            1 0.1393996
+4 chr1 1700007P06Rik 187125138 187127852          823            0 0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034           10 1.1985133
+6 chr1 1700015E13Rik 170308861 170312125          713           15 2.6071446
+[1] "S5.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S5_GeneCount   S5_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           22 3.8283494
+2 chr1 1500015O10Rik  43730602  43742564          888           69 9.0188435
+3 chr1 1700001G17Rik  33669824  33670712          889            3 0.3916825
+4 chr1 1700007P06Rik 187125138 187127852          823            4 0.5641244
+5 chr1 1700009P17Rik 171121661 171126967         1034           24 2.6940486
+6 chr1 1700015E13Rik 170308861 170312125          713           20 3.2557810
+[1] "S6.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S6_GeneCount   S6_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           17 2.7556031
+2 chr1 1500015O10Rik  43730602  43742564          888           72 8.7662350
+3 chr1 1700001G17Rik  33669824  33670712          889            2 0.2432326
+4 chr1 1700007P06Rik 187125138 187127852          823            2 0.2627385
+5 chr1 1700009P17Rik 171121661 171126967         1034           23 2.4049213
+6 chr1 1700015E13Rik 170308861 170312125          713           14 2.1229124
+[1] "S7.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S7_GeneCount   S7_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           28 4.6495211
+2 chr1 1500015O10Rik  43730602  43742564          888           63 7.8578478
+3 chr1 1700001G17Rik  33669824  33670712          889            4 0.4983498
+4 chr1 1700007P06Rik 187125138 187127852          823            0 0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034           30 3.2134885
+6 chr1 1700015E13Rik 170308861 170312125          713           20 3.1068229
+[1] "S8.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S8_GeneCount   S8_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           29 4.6967109
+2 chr1 1500015O10Rik  43730602  43742564          888           82 9.9752216
+3 chr1 1700001G17Rik  33669824  33670712          889            2 0.2430244
+4 chr1 1700007P06Rik 187125138 187127852          823            0 0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034           28 2.9252242
+6 chr1 1700015E13Rik 170308861 170312125          713            0 0.0000000
+[1] "S9.tab.txt"
+   Chr        GeneID     Start      Stop CodingLength S9_GeneCount   S9_RPKM
+1 chr1 1110058L19Rik  23995939  24005640          667           51 8.6750136
+2 chr1 1500015O10Rik  43730602  43742564          888           34 4.3440196
+3 chr1 1700001G17Rik  33669824  33670712          889            2 0.2552431
+4 chr1 1700007P06Rik 187125138 187127852          823            0 0.0000000
+5 chr1 1700009P17Rik 171121661 171126967         1034           37 4.0598221
+6 chr1 1700015E13Rik 170308861 170312125          713           12 1.9094907
+> proc.time()
+   user  system elapsed 
+  4.139   0.090   4.232 

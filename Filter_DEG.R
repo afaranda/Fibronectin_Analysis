@@ -5,9 +5,9 @@
 # Setup Environment
 library(dplyr)
 library(openxlsx)
-library(org.Mm.eg.db)
+#library(org.Mm.eg.db)
 
-wd<-'/home/abf/LEC_Time_Series'
+wd<-getwd()
 outDir<-paste(wd,'DiffExp', sep="/")
 
 
@@ -23,16 +23,18 @@ for (dataFile in degDataFiles){
 	# Load in DEGs
 	dg<-read.table(dataFile, sep="\t", quote="", header=T)
 	samples<-names(dg)[grep("_GeneCount.cpm", names(dg))]
-	
+
+	print(paste("############ FILTER DEG: ",contrast, "##########"))	
+
 	# Add Columns for Filtering based on statistical Criteria
-	print(paste("CPM Present Cols:", samples), collapse= " ")
+	print(paste("CPM Present Cols:", paste(samples, collapse=" "), sep= " "))
 	dg$Cpm.Present<-apply(dg[, samples], 
 		1, function(x) sum(x > 1) >=2
 	)
 
 	# Setup for RPKM Filtering Criteria
 	samples<-gsub("_GeneCount.cpm", "_RPKM", samples)
-	print(paste("RPKM Filtering Cols:", samples, collapse=" "))
+	print(paste("RPKM Filtering Cols:", paste(samples, collapse=" "), sep=" "))
 	dg$Avg1<-apply(dg[,samples[1:3]], 1, mean)
 	dg$Avg2<-apply(dg[,samples[4:6]], 1, mean)
 	
@@ -52,7 +54,7 @@ for (dataFile in degDataFiles){
 	# Get Biologically significant genes based on the following criteria	
 	db<-dg %>% filter(abs(logFC) > 1 & FDR < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)
 
-	print(paste("############ MERGE RPKM: ",contrast, "##########"))
+
 	print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$GeneID))))
 	print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$GeneID))))
 	print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$GeneID))))

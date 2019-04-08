@@ -1,7 +1,7 @@
 
-R version 3.5.0 (2018-04-23) -- "Joy in Playing"
-Copyright (C) 2018 The R Foundation for Statistical Computing
-Platform: x86_64-pc-linux-gnu (64-bit)
+R version 3.3.3 (2017-03-06) -- "Another Canoe"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -95,43 +95,31 @@ Disp = 0.09044 , BCV = 0.3007
 [1] "Rows after join cpm: 14472"
 [1] "Rows after join counts: 14472"
 [1] "Rows after join RPKM: 14472"
-R version 3.5.0 (2018-04-23)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Fedora 24 (Twenty Four)
-
-Matrix products: default
-BLAS: /home/abf/R_3.5.0/lib64/R/lib/libRblas.so
-LAPACK: /home/abf/R_3.5.0/lib64/R/lib/libRlapack.so
+R version 3.3.3 (2017-03-06)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X Mavericks 10.9.5
 
 locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] dplyr_0.8.0.1  biomaRt_2.38.0 edgeR_3.24.3   limma_3.38.3  
+[1] dplyr_0.8.0.1  biomaRt_2.30.0 edgeR_3.16.5   limma_3.30.13 
 
 loaded via a namespace (and not attached):
- [1] Rcpp_1.0.1           pillar_1.3.1         compiler_3.5.0      
- [4] prettyunits_1.0.2    bitops_1.0-6         tools_3.5.0         
- [7] progress_1.2.0       digest_0.6.18        bit_1.1-14          
-[10] RSQLite_2.1.1        memoise_1.1.0        tibble_2.1.1        
-[13] lattice_0.20-38      pkgconfig_2.0.2      rlang_0.3.3         
-[16] DBI_1.0.0            parallel_3.5.0       stringr_1.4.0       
-[19] httr_1.4.0           S4Vectors_0.20.1     IRanges_2.16.0      
-[22] hms_0.4.2            tidyselect_0.2.5     locfit_1.5-9.1      
-[25] stats4_3.5.0         bit64_0.9-7          grid_3.5.0          
-[28] glue_1.3.1           Biobase_2.42.0       R6_2.4.0            
-[31] AnnotationDbi_1.44.0 XML_3.98-1.19        purrr_0.3.2         
-[34] blob_1.1.1           magrittr_1.5         BiocGenerics_0.28.0 
-[37] assertthat_0.2.1     stringi_1.4.3        RCurl_1.95-4.12     
-[40] crayon_1.3.4        
+ [1] Rcpp_1.0.0           AnnotationDbi_1.36.2 magrittr_1.5        
+ [4] BiocGenerics_0.20.0  IRanges_2.8.2        tidyselect_0.2.5    
+ [7] bit_1.1-14           lattice_0.20-38      R6_2.4.0            
+[10] rlang_0.3.1          blob_1.1.1           parallel_3.3.3      
+[13] grid_3.3.3           Biobase_2.34.0       DBI_1.0.0           
+[16] bit64_0.9-7          digest_0.6.18        assertthat_0.2.0    
+[19] tibble_2.0.1         crayon_1.3.4         purrr_0.3.0         
+[22] S4Vectors_0.12.2     bitops_1.0-6         RCurl_1.95-4.11     
+[25] memoise_1.1.0        glue_1.3.0           RSQLite_2.1.1       
+[28] pillar_1.3.1         stats4_3.3.3         XML_3.98-1.17       
+[31] locfit_1.5-9.1       pkgconfig_2.0.2     
 > proc.time()
    user  system elapsed 
- 19.857   0.247  20.384 
+ 20.156   0.642  21.199 
