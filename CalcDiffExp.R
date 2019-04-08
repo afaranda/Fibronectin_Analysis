@@ -21,7 +21,7 @@ getversion<-function(ens){
 }
 
 # Run Biomart Query to fetch descriptions and Ensembl ID's
-query<-list.files(pattern="Query")
+query<-list.files(pattern="biomaRt_query")
 if (length(query) > 0) {
    load(query[1])
 } else {
@@ -68,6 +68,7 @@ if (length(query) > 0) {
 		group_by(external_gene_name) %>%
 		filter(row_number()==1)
 	)
+	save(result, file="biomaRt_query.Rdata")
 }
 print(paste("Total Annotation Rows: ", nrow(result), "Unique GeneID: ", length(unique(result$external_gene_name)), sep=''))
 
@@ -111,6 +112,7 @@ calcRPKM<-function(df, rSuffix="_RPKM", cSuffix="_GeneCount", lenCol="CodingLeng
 }
 
 df<-calcRPKM(df)
+write.table(df, "GeneCount.ReCalcRPKM.tsv")
 
 # Calculate Differential Expression based on 
 for( g in pairwiseContrasts){
