@@ -17,6 +17,8 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
+[Previously saved workspace restored]
+
 > library(edgeR)
 Loading required package: limma
 > library(biomaRt)
@@ -36,126 +38,9 @@ The following objects are masked from ‘package:base’:
 
     intersect, setdiff, setequal, union
 
-> 
-> # Enter Working Directory and Load Raw Data
-> #setwd('/Users/afaranda/Desktop/LEC_Time_Series')
-> wd<-getwd()
-> outDir<-paste(wd,'DiffExp',sep='/')
-> 
-> df <- read.table("GeneCount.tsv", header=T, stringsAsFactors =F)
-> 
-> # Define Primary Key for Raw Data -- GeneID is not sufficient
-> # Use a composite of GeneID, Chromosome, Coding Length
-> df$PrimaryKey <- paste(df$GeneID, df$Chr, df$CodingLength)
-> print(paste("Validate Primary Key, Row count: ", nrow(df), ", Unique keys: ", length(unique(df$PrimaryKey)), sep=""))
+> options(echo=F)
 [1] "Validate Primary Key, Row count: 24147, Unique keys: 24147"
-> 
-> # Helper Function to get version number from 'ensembl_gene_id_version'
-> getversion<-function(ens){
-+ 	v<-strsplit(ens, "\\.")[[1]][2]
-+ 	return(as.integer(v))
-+ }
-> 
-> # Run Biomart Query to fetch descriptions and Ensembl ID's
-> query<-list.files(pattern="Query")
-> if (length(query) > 0) {
-+    load(query[1])
-+ } else {
-+ 	# Annotate Differentially Expressed Genes best possible ENSEMBL ID
-+ 		
-+ 	# 'attr': list of attributes to retrieve
-+ 	attr<-c("ensembl_gene_id", "external_gene_name", "description",
-+ 	        "ensembl_gene_id_version", "chromosome_name", "gene_biotype"
-+ 	        )
-+ 	# 'fc': attribute used for query by gene ID
-+ 	fc<-'external_gene_name'
-+ 	print(paste("Using attributes: ", attr, sep=""))
-+ 	print(paste("Searching on: ", fc, sep=""))
-+ 	
-+ 	# 'gq': list of unique 'GeneID' submitted as biomart query
-+ 	gq<-unique(df$GeneID)
-+ 
-+ 	# Actual biomaRt query
-+ 	mart<-useMart(biomart="ensembl", dataset="mmusculus_gene_ensembl")
-+ 	result<-getBM(mart=mart, attributes=attr, filters=fc, values=gq)
-+ 	
-+ 	# Get set of unique gene symbols for all duplicated rows
-+ 	dg<-unique(result[duplicated(result$external_gene_name),'external_gene_name'])
-+ 	
-+ 	# Filter biomaRt query to remove duplicate annotations
-+ 	result<-bind_rows(
-+ 		# All rows with a unique external gene name
-+ 		result %>% filter(!(external_gene_name %in% dg)),
-+ 		
-+ 		result %>% 
-+ 		# Restrict filter to rows with  duplicated 'external_gene_name' 
-+ 		filter(external_gene_name %in% dg) %>%
-+ 		
-+ 		# Group by external_gene_name and filter rows where chromosome_name is not
-+ 		# an actual chromosome; 1-18, X or Y
-+ 		group_by(external_gene_name) %>%
-+ 		filter(grepl("^[0-9]+$", chromosome_name) | grepl("^[X,Y]$", chromosome_name)) %>%
-+ 		
-+ 		# Group by 'external_gene_name' and choose the row with the highest version number
-+ 		group_by(external_gene_name) %>%
-+ 		filter(getversion(ensembl_gene_id_version) == max(getversion(ensembl_gene_id_version)) ) %>%
-+ 		
-+ 		# If there are any remaining duplicates, choose the one at the top of the group
-+ 		group_by(external_gene_name) %>%
-+ 		filter(row_number()==1)
-+ 	)
-+ 	save(result, file="biomaRt_query.Rdata")
-+ }
-[1] "Using attributes: ensembl_gene_id"        
-[2] "Using attributes: external_gene_name"     
-[3] "Using attributes: description"            
-[4] "Using attributes: ensembl_gene_id_version"
-[5] "Using attributes: chromosome_name"        
-[6] "Using attributes: gene_biotype"           
-[1] "Searching on: external_gene_name"
-> print(paste("Total Annotation Rows: ", nrow(result), "Unique GeneID: ", length(unique(result$external_gene_name)), sep=''))
 [1] "Total Annotation Rows: 22751Unique GeneID: 22751"
-> 
-> # Define Replicate Groups
-> sampleGroups<-list(
-+  	WT_0_Hour=c("S1", "S2", "S3"),
-+  	WT_48_Hour=c("S7", "S8", "S9"),
-+  	FN_0_Hour=c("S10", "S11", "S12"),
-+  	FN_48_Hour=c("S13", "S14", "S15")
-+ )
->  
-> pairwiseContrasts<-list(
-+ 	WT_0_Hour_vs_WT_48_Hour = c('WT_0_Hour', 'WT_48_Hour'),
-+ 	FN_0_Hour_vs_FN_48_Hour = c('FN_0_Hour', 'FN_48_Hour'),
-+ 	WT_0_Hour_vs_FN_0_Hour = c('WT_0_Hour', 'FN_0_Hour'),
-+ 	WT_48_Hour_vs_FN_48_Hour = c('WT_48_Hour', 'FN_48_Hour')
-+ )
-> 
-> # Function Calculates fold change from logFC
-> calcFC<-function(lfc){
-+ 	if(!is.na(lfc) & lfc > 0){
-+ 		return(2^lfc)
-+ 	}
-+ 	else if(!is.na(lfc) & lfc < 0){
-+ 	     return(0 - 2^abs(lfc))
-+ 	}
-+ 	else { return(0)}
-+ }
-> 
-> # Calculate RPKM Values based on counts in "GeneCount.tsv"
-> calcRPKM<-function(df, rSuffix="_RPKM", cSuffix="_GeneCount", lenCol="CodingLength"){
-+         countCols<-names(df)[grep(cSuffix, names(df))]
-+         for(i in countCols){
-+                 rpkmCol<-gsub(cSuffix, rSuffix, i)
-+                 print(paste(i, rpkmCol, sep=" "))
-+                 s<-sum(df[,i])/1000000
-+                 print(s)
-+                 df[rpkmCol]<-(df[,i]/s)/(df[lenCol]/1000)
-+         }
-+         df
-+ }
-> 
-> df<-calcRPKM(df)
 [1] "S1_GeneCount S1_RPKM"
 [1] 9.706747
 [1] "S10_GeneCount S10_RPKM"
@@ -186,89 +71,6 @@ The following objects are masked from ‘package:base’:
 [1] 9.257172
 [1] "S9_GeneCount S9_RPKM"
 [1] 8.814023
-> 
-> # Calculate Differential Expression based on 
-> for( g in pairwiseContrasts){
-+  	
-+   	# Get a list of Sample ID's in Group Order, corresponding to column names in "GeneCounts.tsv"
-+  	samples<-c(
-+ 		names(df)[sub("_GeneCount", "", names(df)) %in% sampleGroups[[g[1]]]],
-+ 		names(df)[sub("_GeneCount", "", names(df)) %in% sampleGroups[[g[2]]]]
-+ 	)
-+ 	
-+ 	# Define a factor for group assignment in the DGEList
-+ 	group<-factor(
-+ 		c(
-+ 			rep(1, length(sampleGroups[[g[1]]])), 
-+ 			rep(2, length(sampleGroups[[g[2]]]))
-+ 		), 
-+ 		labels=c(g[1], g[2])
-+ 	)
-+ 	
-+ 	# Build DGEList
-+ 	y<-DGEList(
-+ 		counts=df[,samples], 
-+ 		group=group, 
-+ 		genes=df[,c("PrimaryKey", "GeneID", "Chr", "CodingLength")]
-+ 	)
-+ 	row.names(y)<-y$genes$PrimaryKey
-+ 
-+ 	# Filter DGEList: Remove genes where fewer than two samples have a cpm > 1
-+ 	keep <- rowSums(cpm(y) > 1) >= 2
-+ 	y.filter <-y[keep, ]
-+ 	y.filter$samples$lib.size <- colSums(y.filter$counts) # Fix library size after filtering
-+ 	
-+ 	# Calculate Normalization factors and dispersion estimates
-+ 	y.filter <-calcNormFactors(y.filter)
-+ 	y.filter <-estimateCommonDisp(y.filter, verbose=T)
-+ 	y.filter <-estimateTagwiseDisp(y.filter)
-+ 	
-+ 	# Calculate Differential Expression
-+ 	et<-exactTest(y.filter, pair=levels(group))
-+ 	degSet<-topTags(et, n=25000)@.Data[[1]]
-+ 
-+ 	# Add Absolute Fold Change column "FC"
-+ 	degSet$FC<-sapply(degSet$logFC, calcFC)
-+ 	print(paste("Rows in degSet:", nrow(degSet)))
-+ 	
-+ 	# Join biomart query results to table of differentially expressed genes
-+ 	# on the gene symbol attribute. 
-+ 	degSet<-merge(degSet, result, by.x='GeneID', by.y='external_gene_name', all.x=T)
-+ 	file<-paste(outDir,"/",
-+ 		paste(g, collapse="_vs_"),
-+ 		"_expressedTags-all.txt", sep=""
-+ 	)
-+ 	print(paste("Rows in degSet after biomaRt:", nrow(degSet)))
-+ 	
-+ 	# Reorder Columns
-+ 	degSet<-degSet %>% dplyr::select(PrimaryKey,
-+ 				GeneID, ensembl_gene_id, description,
-+ 				FC, logFC, logCPM, PValue, FDR, CodingLength, Chr
-+ 	)
-+ 	
-+ 	# Join counts per million (calculated prior to filtering genes)
-+ 	cpmy<-as.data.frame(cpm(y))
-+ 	names(cpmy)<-gsub("Count","Count.cpm", names(cpmy))
-+ 	cpmy$PrimaryKey<-row.names(y)
-+ 	degSet<-merge(x=degSet, y=cpmy, by='PrimaryKey')
-+ 	print(paste("Rows after join cpm:", nrow(degSet)))
-+ 
-+ 	# Join read counts
-+ 	counts<-as.data.frame(y$counts)
-+ 	names(counts)<-gsub("Count", "Count.counts", names(counts))
-+ 	counts$PrimaryKey<-row.names(counts)
-+ 	degSet<-merge(x=degSet, y=counts, by='PrimaryKey')
-+ 	print(paste("Rows after join counts:", nrow(degSet)))
-+ 
-+ 	# Join rpkm
-+ 	degSet<-merge(x=degSet, y=df[,c("PrimaryKey", gsub("_GeneCount", "_RPKM", samples))], by="PrimaryKey")
-+ 	print(paste("Rows after join RPKM:", nrow(degSet)))
-+ 	
-+ 	write.table(degSet,
-+ 		file=file,
-+ 		sep="\t", row.names=F, quote=F
-+ 	)
-+ }
 Disp = 0.07513 , BCV = 0.2741 
 [1] "Rows in degSet: 14676"
 [1] "Rows in degSet after biomaRt: 14676"
@@ -293,9 +95,43 @@ Disp = 0.09044 , BCV = 0.3007
 [1] "Rows after join cpm: 14472"
 [1] "Rows after join counts: 14472"
 [1] "Rows after join RPKM: 14472"
-> 
-> 
-> 
+R version 3.5.0 (2018-04-23)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Fedora 24 (Twenty Four)
+
+Matrix products: default
+BLAS: /home/abf/R_3.5.0/lib64/R/lib/libRblas.so
+LAPACK: /home/abf/R_3.5.0/lib64/R/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] dplyr_0.8.0.1  biomaRt_2.38.0 edgeR_3.24.3   limma_3.38.3  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.1           pillar_1.3.1         compiler_3.5.0      
+ [4] prettyunits_1.0.2    bitops_1.0-6         tools_3.5.0         
+ [7] progress_1.2.0       digest_0.6.18        bit_1.1-14          
+[10] RSQLite_2.1.1        memoise_1.1.0        tibble_2.1.1        
+[13] lattice_0.20-38      pkgconfig_2.0.2      rlang_0.3.3         
+[16] DBI_1.0.0            parallel_3.5.0       stringr_1.4.0       
+[19] httr_1.4.0           S4Vectors_0.20.1     IRanges_2.16.0      
+[22] hms_0.4.2            tidyselect_0.2.5     locfit_1.5-9.1      
+[25] stats4_3.5.0         bit64_0.9-7          grid_3.5.0          
+[28] glue_1.3.1           Biobase_2.42.0       R6_2.4.0            
+[31] AnnotationDbi_1.44.0 XML_3.98-1.19        purrr_0.3.2         
+[34] blob_1.1.1           magrittr_1.5         BiocGenerics_0.28.0 
+[37] assertthat_0.2.1     stringi_1.4.3        RCurl_1.95-4.12     
+[40] crayon_1.3.4        
 > proc.time()
    user  system elapsed 
- 23.376   0.332  86.276 
+ 19.857   0.247  20.384 

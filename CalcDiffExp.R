@@ -1,6 +1,7 @@
 library(edgeR)
 library(biomaRt)
 library(dplyr)
+options(echo=F)
 
 # Enter Working Directory and Load Raw Data
 #setwd('/Users/afaranda/Desktop/LEC_Time_Series')
@@ -198,3 +199,4 @@ for( g in pairwiseContrasts){
 }
 
 
+print(sessionInfo())
