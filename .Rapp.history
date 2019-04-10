@@ -564,30 +564,51 @@ wd<-getwd
 wd<-getwd()
 wd
 paste(wd,'Diff', sep='/')
-?save
-list.files()
-setwd('Documents')
-setwd('LEC_Time_Series')
-list.files()
-library(dplyr)#
-library(openxlsx)#
-#
-wd<-getwd()#
-outDir<-paste(wd,'GEO_Split_Files', sep="/")#
-dataFile<-"GeneCount.ReCalcRPKM.tsv"#
-#
-# Import data tables#
-setwd(wd)#
-countData<-read.table(dataFile, quote="", sep="\t", header=T)#
-#
-commonCols<-c("Chr", "GeneID", "Start", "Stop", "CodingLength")#
-for ( n in names(countData)[grep("_GeneCount", names(countData))]){#
-	m<-(gsub("_GeneCount","_RPKM",n))#
-	print(paste(gsub("_RPKM", ".tab.txt",m), sep=""))#
-	print(head(countData[c(commonCols, n, m)]))#
-	write.table(#
-		countData[c(commonCols, n, m)],#
-		file=paste(gsub("_RPKM", ".tab.txt",m), sep=""),#
-		quote=F, sep='\t', row.names=F#
-	)#
+s<-9.699202
+s
+347/s
+(347/s)/1.185
+setwd('/Users/afaranda/Documents/LEC_Time_Series')
+matches<-function(charVector, pattern="_GeneCount"){#
+	return(charVector[grep(pattern, charVector)])#
 }
+countCols<-matches(names(df))
+countCols
+matches(names(df))
+countCols<-matches(charVector=names(df))
+countCols
+matches<-function(charVector, pattern="_GeneCount"){#
+	print(charVector)#
+	return(charVector[grep(pattern, charVector)])#
+}
+countCols<-matches(charVector=names(df))
+countCols<-matches(charVector=names(df))
+setwd('/Users/afaranda/Documents/LEC_Time_Series')#
+#
+df<-read.table('GeneCount.tsv', header=T)#
+matches<-function(charVector, pattern="_GeneCount"){#
+	print(charVector)#
+	return(charVector[grep(pattern, charVector)])#
+}#
+countCols<-matches(charVector=names(df))
+countCols
+for(i in countCols){#
+	check<-c(check, i)#
+	for(j in setdiff(countCols, check)){#
+		print(paste(i, j, cor(df[,i], df[,j]), sep=" - "))#
+	}#
+}
+countCols<-matches(charVector=names(df))#
+check<-character()#
+for(i in countCols){#
+	check<-c(check, i)#
+	for(j in setdiff(countCols, check)){#
+		print(paste(i, j, cor(df[,i], df[,j]), sep=" - "))#
+	}#
+}
+?hclust
+?dist
+m
+df[countCols]
+countMatrix<-as.matrix(df[countCols])
+df$var<-apply(df[,countCols], 1, var)
