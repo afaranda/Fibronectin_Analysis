@@ -1,39 +1,3 @@
-library(dplyr)
-library('BiocInstaller')
-x<-data.frame(#
-	conditon<-rep(c("None", "Bleach", "Bleach"), each=5),#
-	duration<-rep(c(0,0,30), each=5)#
-	count<-c(#
-		rpois(5, 125), #
-		rpois(5, 100),#
-		rpois(5, 75)#
-	)#
-)
-x<-data.frame(#
-	conditon<-rep(c("None", "Bleach", "Bleach"), each=5),#
-	duration<-rep(c(0,0,30), each=5),#
-	count<-c(#
-		rpois(5, 125), #
-		rpois(5, 100),#
-		rpois(5, 75)#
-	)#
-)
-x
-x<-data.frame(#
-	conditon=rep(c("None", "Bleach", "Bleach"), each=5),#
-	duration=rep(c(0,0,30), each=5),#
-	count=c(#
-		rpois(5, 125), #
-		rpois(5, 100),#
-		rpois(5, 75)#
-	)#
-)
-c
-x
-model<-glm(count ~ treatment+duration, x, family="poisson")
-model<-glm(count ~ condition+duration, x, family="poisson")
-model<-glm(count ~ conditon+duration, x, family="poisson")
-summary(model)
 df<-data.frame(#
 	conditon=factor(rep(c("None", "Bleach", "Bleach"), each=5), levels=c("None", "Bleach")),#
 	duration=rep(c(0,0,30), each=5),#
@@ -568,28 +532,548 @@ s<-9.699202
 s
 347/s
 (347/s)/1.185
-R
-countCols<-matches(charVector=names(df))#
-check<-character()#
-for(i in countCols){#
-	check<-c(check, i)#
-	for(j in setdiff(countCols, check)){#
-		print(paste(i, j, cor(df[,i], df[,j]), sep=" - "))#
+files<-list.files(pattern="GSM*.txt$")
+files
+setwd('/Users/afaranda/Documents/LEC_Time_Series') # Update Accordingly
+files<-list.files(pattern="GSM*.txt$")
+files
+files<-list.files(pattern="^GSM*.txt$")
+files
+files<-list.files(pattern="^GSM")
+files
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		print(names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep=''), #
+			paste(s,'_GeneCount.rpkm', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep=''), #
+			paste(s,'_RPKM', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		check$rpkmDiff<-round(check[,dfc[3]],9) - round(check[,allc[3]], 9)#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+		print(paste("Sum, rpkmDiff:", sum(abs(check$rpkmDiff))))#
 	}#
 }
-setwd('/Users/afaranda/Documents/LEC_Time_Series')#
+compare(files, all=dataSets[[1]])
+# Load in data for comparison#
+# Datafiles: #
+#     GeneCount.tsv -- new pipeline output#
+#     GeneCount.tsv.bak -- previous output with duplicated sample#
 #
-df<-read.table('GeneCount.tsv', header=T)#
-matches<-function(charVector, pattern="_GeneCount"){#
-	return(charVector[grep(pattern, charVector)])#
+setwd('/Users/afaranda/Documents/LEC_Time_Series') # Update Accordingly#
+dataSets<-list()#
+for (i in list.files(pattern="GeneCount.tsv")){#
+ 	dataSets[[i]]<-read.table(i, header=T, quote='', sep='\t')#
+}#
+# Scan data sets to see which columns changed between old and new#
+x<-c()#
+for (i in names(dataSets[[1]])){#
+ 	print(identical(dataSets[[1]][,i], dataSets[[2]][,i]))#
+ 	x<-c(x, !identical(dataSets[[1]][,i], dataSets[[2]][,i]))#
+ }#
+#
+# Verify that Sample S1 has been updated. #
+print(head(dataSets[[1]][,x]))#
+print(head(dataSets[[2]][,x]))#
+#
+# Verify that Start, Stop and CodingLength attributes contain#
+# the same data, just in a different order -- also, no counts#
+y<-dataSets[[1]]$Start != dataSets[[2]]$Start#
+cols<-c(#
+	"GeneID", "Start", "Stop", "CodingLength",#
+	names(dataSets[[1]])[grep("GeneCount", names(dataSets[[1]]))]#
+)#
+files<-list.files(pattern="^GSM")#
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		print(names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep=''), #
+			paste(s,'_GeneCount.rpkm', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep=''), #
+			paste(s,'_RPKM', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		check$rpkmDiff<-round(check[,dfc[3]],9) - round(check[,allc[3]], 9)#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+		print(paste("Sum, rpkmDiff:", sum(abs(check$rpkmDiff))))#
+	}#
+}
+compare(files, all=dataSets[[1]])
+plot(dataSets[[1]]$S1_GeneCount, dataSets[[2]]$S1_GeneCount)
+plot(log(dataSets[[1]]$S1_GeneCount,2), log(dataSets[[2]]$S1_GeneCount,2))
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep=''), #
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep=''), #
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}
+compare(files, all=dataSets[[1]])
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
 }#
 #
-countCols<-matches(charVector=names(df))#
-check<-character()#
-for(i in countCols){#
-	check<-c(check, i)#
-	for(j in setdiff(countCols, check)){#
-		print(paste(i, j, cor(df[,i], df[,j]), sep=" - "))#
+compare(files, all=dataSets[[1]])
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
 	}#
 }
-identical(df$S1_GeneCount, df$S10_GeneCount)
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}#
+#
+compare(files, all=dataSets[[1]])
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3]#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}#
+#
+compare(files, all=dataSets[[1]])
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3],#
+			'rpkmDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}#
+#
+compare(files, all=dataSets[[1]])
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3]#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}#
+#
+compare(files, all=dataSets[[1]])
+files<-list.files(pattern="^GSM")#
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff',#
+			allc[3],#
+			dfc[3]#
+		)#
+		print(ord)#
+		print(head(check))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}
+compare(files, all=dataSets[[1]])
+files<-list.files(pattern="^GSM")#
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff'#
+		)#
+		print(ord)#
+		print(head(check))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}
+compare(files, all=dataSets[[1]])
+compare<-function(f=files, all=a){#
+	for ( i in f ) {#
+		s<-gsub(".tab.txt","", gsub("GSM303064[4|5|6|7|8|9]_","",i))#
+		df<-read.table( i, header=T, quote="", sep='\t', stringsAsFactors=F)#
+		dup<-unique(#
+			c(#
+				unique(with(all, all[duplicated(GeneID), 'GeneID'])),#
+				unique(with(df, df[duplicated(GeneID), 'GeneID']))#
+			)#
+		)#
+		names(df)<-gsub("S6_GeneCount$", "S6_GeneCount.raw", names(df))#
+		dfc<-c('GeneID', #
+			paste(s,'_GeneCount.raw', sep='')#
+		)#
+		allc<-c(#
+			'GeneID', #
+			paste(s,'_GeneCount', sep='')#
+		)#
+		# Most GeneID are unique -- limit check to those#
+		check<-merge(#
+			df[!(df$GeneID %in% dup), dfc],#
+			all[!(all$GeneID %in% dup), allc],#
+			by='GeneID'#
+		)#
+		check#
+		check$countDiff<-check[,dfc[2]] - check[,allc[2]]#
+		ord<-c(#
+			"GeneID",#
+			allc[2],#
+			dfc[2],#
+			'countDiff'#
+		)#
+		print(head(check[,ord]))#
+		print(paste("Sum, countDiff:", sum(abs(check$countDiff))))#
+	}#
+}
+compare(files, all=dataSets[[1]])
+print(dataSets[[1]][y,cols])#
+print(dataSets[[2]][y,cols])
+compare(files, all=dataSets[[2]])
+rm(list=ls())
+ls()
+ls()
+setwd('/Users/afaranda/Documents/LEC_Time_Series') # Update Accordingly
+options(echo=F)#
+dataSets<-list()#
+for (i in list.files(pattern="GeneCount.tsv")){#
+ 	dataSets[[i]]<-read.table(i, header=T, quote='', sep='\t')#
+}
+ls()
+i
+names(dataSets)
+list.files()

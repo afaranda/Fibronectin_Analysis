@@ -15,7 +15,15 @@ outDir<-paste(wd,'DiffExp', sep="/")
 setwd(outDir)
 degDataFiles<-list.files(pattern="expressedTags-all.txt$")
 
+
+# Function that converts short names to descriptive filenames
+descName<-function(x){
+	x<-gsub('WT_0_Hour', 'Wildtype-0-Hour', x)
+	x<-gsub('WT_48_Hour', 'Wildtype-48-Hour', x)
+	x<-gsub('FN_0_Hour', 'FNcKO-0-Hour', x)
+	x<-gsub('FN_48_Hour', 'FNcKO-48-Hour', x)
 	
+}
 
 for (dataFile in degDataFiles){
 	contrast<-gsub("_expressedTags-all.txt$","", dataFile)
@@ -55,15 +63,56 @@ for (dataFile in degDataFiles){
 	db<-dg %>% filter(abs(logFC) > 1 & FDR < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)
 
 
-	print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$GeneID))))
-	print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$GeneID))))
-	print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$GeneID))))
+	print(
+		paste(
+			"Rowcount before join: ", nrow(df),
+			"Rowcount after join: ", nrow(dg), 
+			"Unique GeneID: ", length(unique(dg$GeneID))
+		)
+	)
+	
+	print(
+		paste(
+			"Rowcount Stat Sig.: ", nrow(ds), 
+			"Stat Sig Unique GeneID: ", length(unique(ds$GeneID))
+		)
+	)
+	
+	print(
+		paste(
+			"Rowcount Biol Sig.: ", nrow(db), 
+			"Biol Sig Unique GeneID: ", length(unique(db$GeneID))
+		)
+	)
 	print("")
+	degTable<-data.frame(
+		Criteria=c("Statistically Significant", "Biologically Significant"),
+		Total=c(nrow(ds), nrow(db)),
+		Upregulated=c(
+			nrow(ds[ds$logFC > 1,]),
+			nrow(db[db$logFC > 1,])
+		),
+
+		Downregulated=c(
+			nrow(ds[ds$logFC < -1,]),
+			nrow(db[db$logFC < -1,])
+		)
+	)
+
+	print(degTable)
+	print(list.files("../", pattern=descName(contrast)))
+	
 
 	# Build Excel Workbook
-	wb<-createWorkbook()
+	wb<-loadWorkbook(
+		paste("..", 
+			list.files("../", pattern=descName(contrast)), 
+			sep="/"
+		)
+	)
 	tx<-createStyle(numFmt="@")
-
+	writeData(wb, 1, degTable, startCol=2, startRow=24,colNames=F) # Add DEG counts to main page
+	
 	tables<-list(
 		`All Present Genes`=dg,
 		`Statistically Significant`=ds,
@@ -79,7 +128,7 @@ for (dataFile in degDataFiles){
 	      writeData(wb, i, tables[[i]])
 	}
 	
-	saveWorkbook(wb, paste(contrast, "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		
+	saveWorkbook(wb, paste(descName(contrast), "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		
 }
 
 print(sessionInfo())

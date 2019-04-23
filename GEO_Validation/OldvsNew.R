@@ -1,6 +1,6 @@
 options(echo=T)
 options(digits=6)
-# setwd("/Users/afaranda/Documents/GEO_Submission/GSE111430_RAW")
+setwd("/Users/afaranda/Documents/LEC_Time_Series/GEO_Validation")
 a<-read.table(
 	"../GeneCount.tsv",
 	header=T, quote="", sep='\t',
@@ -8,10 +8,12 @@ a<-read.table(
 )
 
 b<-read.table(
-        "../GeneCount.ReCalcRPKM.tsv",
+        "../GeneCount.tsv.bak",
         header=T, quote="", sep='\t',
         stringsAsFactors=F
 )
+
+
 
 files<-list.files(pattern="tab.txt$")
 
@@ -65,6 +67,9 @@ compare<-function(f=files, all=a){
 		print(paste("Sum, rpkmDiff:", sum(abs(check$rpkmDiff))))
 	}
 }
+
+
+
 
 compare(files, all=a)
 compare(files, all=b)

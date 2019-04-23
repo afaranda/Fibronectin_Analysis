@@ -1,0 +1,748 @@
+log(7.2/9.9,2)
+dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )#
+	dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)
+head(dg)
+RPKM_gt2_Either_Cond
+dg$RPKM_gt2_Either_Cond
+(dg$RPKM_gt2_Either_Cond & !dg$RPKM_gt2_Either_Cond)
+sum(dg$RPKM_gt2_Either_Cond & !dg$RPKM_gt2_Either_Cond)
+sum(!dg$RPKM_gt2_Either_Cond & dg$RPKM_gt2_Either_Cond)
+sum(!dg$RPKM_gt2_Either_Cond & dg$Q_Value < 0.05)
+sum(!dg$RPKM_gt2_Either_Cond & dg$Q_value < 0.05)
+sum(!dg$RPKM_gt2_Either_Cond & dg$Qvalue < 0.05)
+head(df)
+sum(!dg$RPKM_gt2_Either_Cond & dg$q_value < 0.05)
+log(2.1/0.1,2)
+2.1-0.1
+log(1.9/0.1,2)
+1.9 -0.1
+1.9 - 0.1
+a<-seq(0,4,by=0.1)
+a
+b<-(a/2)
+b
+test<-data.frame(a,b)
+test
+test$Either<-(test$a>2 | test$b > 2)
+test
+test$Either<-(test$a>2 - test$b > 2)
+test$Either<-(test$a - test$b > 2)
+test
+test$Either<-(test$a>2 | test$b > 2)
+test$DIff<-(test$a - test$b > 2)
+test
+a<-seq(0,6,by=0.1)
+b<-(a/2)
+test<-data.frame(a,b)
+test$Either<-(test$a>2 | test$b > 2)
+test$Diff<-(test$a - test$b > 2)
+test
+# Purpose: Prepare DEG Tables filtered for Statistical and Biological Significance#
+# Created: April 11, 2019#
+# Author: Adam Faranda#
+#
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#library(org.Mm.eg.db)#
+#
+wd<-getwd()#
+# Import data tables#
+degDataFiles<-list.files(pattern="RNA_seq_Unoperated_wt_fn.csv")#
+for (dataFile in degDataFiles){#
+	contrast<-"WT_vs_FN"#
+#
+	# Load in DEGs#
+	dg<-read.csv(dataFile)#
+	print(paste("############ FILTER DEG: ",contrast, "##########"))
+}
+head(dg)
+nrow(dg)
+length(unique(gene))
+length(unique(dg$gene))
+length(unique(paste(dg$gene, dg$locus))
+)
+dg[duplicated(dg$gene),]
+dg[duplicated(dg$gene),"gene"]
+x<-dg[duplicated(dg$gene),"gene"]
+dg[dg$gene %in% x & status = "OK",]
+dg[dg$gene %in% x & status == "OK",]
+dg[dg$gene %in% x & dg$status == "OK",]
+dg[dg$gene %in% x,]
+head(df)
+head(dg)
+}
+# Purpose: Prepare DEG Tables filtered for Statistical and Biological Significance#
+# Created: April 11, 2019#
+# Author: Adam Faranda#
+#
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#library(org.Mm.eg.db)#
+#
+wd<-getwd()#
+# Import data tables#
+degDataFiles<-list.files(pattern="RNA_seq_Unoperated_wt_fn.csv")#
+for (dataFile in degDataFiles){#
+	contrast<-"WT_vs_FN"#
+#
+	# Load in DEGs#
+	dg<-read.csv(dataFile)#
+	print(paste("############ FILTER DEG: ",contrast, "##########"))	#
+	# Setup for RPKM Filtering Criteria#
+	names(dg)[grep("^value_", names(dg))]<-paste(unlist(strsplit(contrast,"_vs_")), "_Average_RPKM", sep="")#
+	dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )#
+	dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)#
+	# Get Statistically Significant Genes#
+	ds<-dg %>% filter(abs(log2.fold_change) > 1 & q_value < 0.05) # & Cpm.Present == T) -- CPM Filter already applied#
+	# Get Biologically significant genes based on the following criteria	#
+	db<-dg %>% filter(abs(log2.fold_change) > 1 & q_value < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)#
+	print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$GeneID))))#
+	print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$GeneID))))#
+	print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$GeneID))))#
+	print("")#
+#
+	# Build Excel Workbook#
+	# wb<-createWorkbook()#
+	# tx<-createStyle(numFmt="@")#
+#
+	# tables<-list(#
+		# `All Present Genes`=dg,#
+		# `Statistically Significant`=ds,#
+		# `Biologically Significant`=db#
+	# )#
+#
+	# for(i in names(tables)){#
+	      # tables[[i]] <- tables[[i]][, setdiff(names(tables[[i]]), "Cpm.Present")] # Drop "Cpm.Present" Column#
+	      # addWorksheet(wb,i)#
+	      # print(nrow(tables[[i]]))#
+	      # cells<-expand.grid(row=nrow(tables[[i]]), col=grep("GeneID", names(tables[[i]])))#
+	      # addStyle(wb, i, rows=cells$row, cols=cells$col, style=tx)#
+	      # writeData(wb, i, tables[[i]])#
+	# }#
+	# saveWorkbook(wb, paste(contrast, "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		#
+}
+dg
+head(dg)
+for (dataFile in degDataFiles){#
+	contrast<-"WT_vs_FN"#
+#
+	# Load in DEGs#
+	dg<-read.csv(dataFile)#
+	print(paste("############ FILTER DEG: ",contrast, "##########"))	#
+	# Setup for RPKM Filtering Criteria#
+	names(dg)[grep("^value_", names(dg))]<-paste(unlist(strsplit(contrast,"_vs_")), "_Average_RPKM", sep="")#
+	dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )#
+	dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)#
+	# Get Statistically Significant Genes#
+	ds<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05) # & Cpm.Present == T) -- CPM Filter already applied#
+	# Get Biologically significant genes based on the following criteria	#
+	db<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)#
+	print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$GeneID))))#
+	print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$GeneID))))#
+	print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$GeneID))))#
+	print("")#
+#
+	# Build Excel Workbook#
+	# wb<-createWorkbook()#
+	# tx<-createStyle(numFmt="@")#
+#
+	# tables<-list(#
+		# `All Present Genes`=dg,#
+		# `Statistically Significant`=ds,#
+		# `Biologically Significant`=db#
+	# )#
+#
+	# for(i in names(tables)){#
+	      # tables[[i]] <- tables[[i]][, setdiff(names(tables[[i]]), "Cpm.Present")] # Drop "Cpm.Present" Column#
+	      # addWorksheet(wb,i)#
+	      # print(nrow(tables[[i]]))#
+	      # cells<-expand.grid(row=nrow(tables[[i]]), col=grep("GeneID", names(tables[[i]])))#
+	      # addStyle(wb, i, rows=cells$row, cols=cells$col, style=tx)#
+	      # writeData(wb, i, tables[[i]])#
+	# }#
+	# saveWorkbook(wb, paste(contrast, "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		#
+}
+class(dg$log2.fold_change.)
+levels(dg$log2.fold_change.)
+sum(dg$log2.fold_change. = "inf")
+sum(dg$log2.fold_change. == "inf")
+for(i in names(dg)){#
+	print(paste("Class:"), class(dg[,i]))#
+}
+for(i in names(dg)){#
+	print(paste("Class:"), class(dg[i]))#
+}
+names(dg)
+i
+dg[i]
+class(dg[i])
+class(dg[,i])
+for(i in names(dg)){#
+	print(paste("Class:"), class(dg[i])#
+}
+for(i in names(dg)){#
+	print(paste("Class:"), class(dg[i]))#
+}
+for(i in names(dg)){#
+	print(paste("Class:", class(dg[i]))#
+}
+for(i in names(dg)){#
+	print(paste("Class:", class(dg[i])))#
+}
+for(i in names(dg)){#
+	print(paste("Class:", class(dg[,i])))#
+}
+for(i in names(dg)){#
+	print(paste(i, "Class:", class(dg[,i])))#
+}
+dataFile<-list.files(pattern="RNA_seq_Unoperated_wt_fn.csv", stringsAsFactors=F)
+dg<-read.csv(dataFile, stringsAsFactors=F)
+for(i in names(dg)){#
+	print(paste(i, "Class:", class(dg[,i])))#
+}
+as.numeric("12")
+as.numeric("a")
+as.numeric("12","a")
+as.numeric("12","a", "14")
+as.numeric(c("12","a", "14"))
+?as.numeric
+is.numeric(c("12","a", "14"))
+is.numeric(c("12","10", "14"))
+is.na(as.numeric(c("12","a", "14")))
+sum(is.na(as.numeric(c("12","a", "14"))))
+for(i in names(dg)){#
+	print(paste(i, "Class:", class(dg[,i])))#
+}
+sapply(dg$log2.fold_change., function(x) if(x=='inf'){inf; else {x}})
+sapply(dg$log2.fold_change., function(x) if(x=='inf'){inf else {x}})
+sapply(dg$log2.fold_change., function(x) if(x=='inf'){inf }else {x})
+sapply(dg$log2.fold_change., function(x) if(x=='inf'){ Inf }else {x})
+sapply(dg$log2.fold_change., function(x) if(x=='inf'){ Inf })
+dg[dg$log2.fold_change. =='inf',]
+dg[dg$log2.fold_change. =='inf',][1:20,]
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+dg[dg$log2.fold_change. == "#NAME?",]
+nrow(dg[dg$log2.fold_change. == "#NAME?",])
+dg[dg$log2.fold_change. == "#NAME?",][1:20,]
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+dg[dg$log2.fold_change. == "0",][1:20,]
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+dg[dg$log2.fold_change. == "0","value_1"]
+sum(dg[dg$log2.fold_change. == "0","value_1"])
+dg[dg$value_1 == 12861.3,]
+dg[dg$status == "HIDATA",]
+unique(dg[dg$status = "HIDATA", "log2.fold_change."])
+unique(dg[dg$status =="HIDATA", "log2.fold_change."])
+unique(dg[dg$log2.fold_change. =="0", "status"])
+unique(dg[dg$status =="NOTEST", "log2.fold_change."])
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+dg[dg$log2.fold_change. == "inf","value_1"]
+sum(dg[dg$log2.fold_change. == "inf","value_1"])
+sum(dg[dg$log2.fold_change. == "inf","value_2"])
+sum(dg[dg$log2.fold_change. == "inf","value_2"]
+)
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+unique(dg[dg$value_2 == 0, "log2.fold_change."])
+sum(dg[dg$log2.fold_change. == "0.00E+00","value_2"])
+sum(dg[dg$log2.fold_change. == "0.00E+00","value_1"])
+dg[dg$log2.fold_change. == "0.00E+00",]
+unique(dg[dg$value_2 == 0, "log2.fold_change."])
+dg[dg$log2.fold_change. == "#NAME?",]
+dg[dg$log2.fold_change. == "#NAME?",][1:20]
+dg[dg$log2.fold_change. == "#NAME?",][1:20,]
+dg[dg$log2.fold_change. == "#NAME?","value_2"]
+sum(dg[dg$log2.fold_change. == "#NAME?","value_2"])
+sum(dg[dg$log2.fold_change. == "#NAME?","value_1"])
+min(dg[dg$log2.fold_change. == "#NAME?","value_1"])
+any(is.na(dg[dg$log2.fold_change. == "#NAME?","value_1"]))
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+unique(dg[dg$value_1 ==0 & dg$value_2 == 0, "log2.fold_change."])
+nrow(dg[dg$value_1 ==0 & dg$value_2 == 0, "log2.fold_change."])
+nrow(dg[dg$value_1 ==0 & dg$value_2 == 0, ])
+unique(dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$status =="NOTEST", "log2.fold_change."])
+unique(dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$status =="HIDATA", "log2.fold_change."])
+unique(dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$status =="NOTEST", "log2.fold_change."])
+dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$status =="NOTEST", "log2.fold_change."]
+dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$status =="NOTEST",]
+dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$status =="",]
+unique(dg[dg$value_1 ==0 & dg$value_2 == 0, "log2.fold_change."])
+nrow(dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$log2.fold_change. =="0.00E+00", ])
+nrow(dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$log2.fold_change. =="0.00E+00", ]
+)
+dg[dg$value_1 ==0 & dg$value_2 == 0 & dg$log2.fold_change. =="0.00E+00", ]
+head(dg[dg$log2.fold_change. == "inf",])
+log(0/0.1,2)
+log(0.1/0,2)
+log(0.1/0,2) > 0
+log(0.1/0,2) < 0
+fix_lfc<-function(as.charcter(x)){#
+	if(x == 'inf'){#
+		return('Inf')#
+	}#
+	else if(x == '#NAME?'){#
+	}#
+	else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(as.charcter(x)){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} else if (x == '#NAME?'){#
+		return '-Inf'#
+	} else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(as.charcter(x)){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} #
+	else if (x == '#NAME?'){#
+		return '-Inf'#
+	}#
+	else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(as.charcter(x)){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} #
+	else if(x == '#NAME?'){#
+		return '-Inf'#
+	}#
+	else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(as.charcter(x)){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} #
+}
+x
+rm(x)
+fix_lfc<-function(as.charcter(x)){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} #
+}
+fix_lfc<-function(x){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} #
+}
+fix_lfc<-function(x){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} #
+#
+	else if(x == '#NAME?'){#
+		return '-Inf'#
+	}#
+	else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(x){#
+	if(x == 'inf'){#
+		return('Inf')#
+	} else if(x == '#NAME?'){#
+		return '-Inf'#
+	} else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(x){#
+	if(x == 'inf') {#
+		return('Inf')#
+	} else if(x == '#NAME?'){#
+		return '-Inf'#
+	} else {#
+		return (x)#
+	}#
+}
+fix_lfc<-function(x){#
+	if(x == 'inf') {#
+		return('Inf')#
+	} #
+	else if(x == '#NAME?'){#
+		return ('-Inf')#
+	} #
+	else {#
+		return (x)#
+	}#
+}
+fix_lfc(c('1', 'inf', '#NAME?', 'inf', 10))
+fix_lfc(1)
+fix_lfc('inf')
+fix_lfc('1')
+unique(dg[dg$value_1 ==0 | dg$value_2 == 0, "log2.fold_change."])
+any(is.na(dg$log2.fold_change))
+as.numeric('inf')
+as.numeric('-inf')
+x
+a
+a<-c(NA, '1', '2', 'inf', #NAME?, 'inf', '3')
+)
+a<-c(NA, '1', '2', 'inf', '#NAME?', 'inf', '3')
+a
+sapply(a, fix_lfc)
+a<-c('1', '2', 'inf', '#NAME?', 'inf', '3')
+sapply(a, fix_lfc)
+fix_lfc<-function(x){#
+	if(!is.na(x))#
+		if(x == 'inf') {#
+			return('Inf')#
+		} #
+		else if(x == '#NAME?'){#
+			return ('-Inf')#
+		} #
+		else {#
+			return (x)#
+		}#
+	}#
+	else { return(NA)}#
+}
+fix_lfc<-function(x){#
+	if(!is.na(x)){#
+		if(x == 'inf') {#
+			return('Inf')#
+		} #
+		else if(x == '#NAME?'){#
+			return ('-Inf')#
+		} #
+		else {#
+			return (x)#
+		}#
+	}#
+	else { return(NA)}#
+}
+a<-c(NA, '1', '2', 'inf', '#NAME?', 'inf', '3')
+sapply(a, fix_lfc)
+sapply(a, fix_lfc, use.names=F)
+sapply(a, fix_lfc, USE.NAMES=F)
+as.numeric(sapply(a, fix_lfc, USE.NAMES=F))
+a<-as.numeric(sapply(dg$log2.fold_change, fix_lfc, USE.NAMES=F))
+head(a)
+b<-as.numeric(dg$log2.fold_change)
+head(b)
+is.numeric(a)
+b==a
+(b==a)==NA
+is.na((b==a))
+dg[is.na((b==a)),][1:20,]
+a[is.na((b==a))]
+dg[is.na((b==a)),'value_2']
+dg[is.na((b==a)),'value_1']
+dg[is.na((b==a)),'value_2']
+a[is.na((b==a))]
+unique(a[is.na((b==a))])
+dg[!is.na((b==a)),][1:20,]
+nrow(df[df$log2.fold_change == '#NAME?',])
+nrow(dg[df$log2.fold_change == '#NAME?',])
+nrow(dg[dg$log2.fold_change == '#NAME?',])
+sum(is.na((b==a)))
+sum(!is.na((b==a)))
+sum(((b==a) == T))
+b==a
+sum(b==a)
+sum(!is.na((b==a)))
+a[!is.na((b==a))] == b[!is.na((b==a))]
+sum(a[!is.na((b==a))] == b[!is.na((b==a))])
+b[1]<-10
+sum(a[!is.na((b==a))] == b[!is.na((b==a))])
+sum(!is.na((b==a)))
+b[1]<-a[1]
+sum(a[!is.na((b==a))] == b[!is.na((b==a))])
+dg$log2.fold_change.<-as.numeric(sapply(dg$log2.fold_change, fix_lfc))
+names(dg)[grep("^value_", names(dg))]<-paste(unlist(strsplit(contrast,"_vs_")), "_Average_RPKM", sep="")
+dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )
+dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)
+ds<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05) # & Cpm.Present == T) -- CPM Filter already applied
+db<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)
+print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$gene))))#
+print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$gene))))#
+print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$gene))))#
+print("")
+# Purpose: Prepare DEG Tables filtered for Statistical and Biological Significance#
+# Created: April 11, 2019#
+# Author: Adam Faranda#
+#
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#
+wd<-getwd()#
+# Import data table and clean up log2.fold_change. column#
+dataFile<-list.files(pattern="RNA_seq_Unoperated_wt_fn.csv")#
+dg<-read.csv(dataFile, stringsAsFactors=F)#
+#
+for(i in names(dg)){#
+	print(paste(i, "Class:", class(dg[,i])))#
+}#
+#
+# Function converts 'inf' and '#NAME?' to 'Inf' and '-Inf'#
+fix_lfc<-function(x){#
+	if(!is.na(x)){#
+		if(x == 'inf') {#
+			return('Inf')#
+		} #
+		else if(x == '#NAME?'){#
+			return ('-Inf')#
+		} #
+		else {#
+			return (x)#
+		}#
+	}#
+	else { return(NA)}#
+}#
+#
+dg$log2.fold_change.<-as.numeric(sapply(dg$log2.fold_change, fix_lfc))#
+#
+contrast<-"WT_vs_FN"#
+#
+# Load in DEGs#
+dg<-read.csv(dataFile)#
+print(paste("############ FILTER DEG: ",contrast, "##########"))	#
+# Setup for RPKM Filtering Criteria#
+names(dg)[grep("^value_", names(dg))]<-paste(unlist(strsplit(contrast,"_vs_")), "_Average_RPKM", sep="")#
+dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )#
+dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)#
+# Get Statistically Significant Genes#
+ds<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05) # & Cpm.Present == T) -- CPM Filter already applied#
+#
+# Get Biologically significant genes based on the following criteria	#
+db<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)#
+print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$gene))))#
+print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$gene))))#
+print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$gene))))#
+print("")#
+#
+# Build Excel Workbook#
+wb<-createWorkbook()#
+tx<-createStyle(numFmt="@")#
+#
+tables<-list(#
+	`All Genes`=dg,#
+	`Statistically Significant`=ds,#
+	`Biologically Significant`=db#
+)#
+#
+for(i in names(tables)){#
+      addWorksheet(wb,i)#
+      print(nrow(tables[[i]]))#
+      cells<-expand.grid(row=nrow(tables[[i]]), col=grep("GeneID", names(tables[[i]])))#
+      addStyle(wb, i, rows=cells$row, cols=cells$col, style=tx)#
+      writeData(wb, i, tables[[i]])#
+}#
+#
+saveWorkbook(wb, paste(contrast, "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		#
+#
+print(sessionInfo())
+library(openxlsx)
+ls()
+getwd()
+list.files()
+wd<-loadWorkbook('WT_vs_FN_Differentially_Expressed_Genes.xlsx')
+ls()
+getSheetNames(wd)
+getSheetNames('WT_vs_FN_Differentially_Expressed_Genes.xlsx')
+saveWorkbook(wd,'test.xlsx')
+# Purpose: Prepare DEG Tables filtered for Statistical and Biological Significance#
+# Created: April 11, 2019#
+# Author: Adam Faranda#
+#
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#
+wd<-getwd()#
+# Import data table and clean up log2.fold_change. column#
+dataFile<-list.files(pattern="RNA_seq_Unoperated_wt_fn.csv")#
+dg<-read.csv(dataFile, stringsAsFactors=F)#
+#
+for(i in names(dg)){#
+	print(paste(i, "Class:", class(dg[,i])))#
+}#
+#
+# Function converts 'inf' and '#NAME?' to 'Inf' and '-Inf'#
+fix_lfc<-function(x){#
+	if(!is.na(x)){#
+		if(x == 'inf') {#
+			return('Inf')#
+		} #
+		else if(x == '#NAME?'){#
+			return ('-Inf')#
+		} #
+		else {#
+			return (x)#
+		}#
+	}#
+	else { return(NA)}#
+}#
+#
+dg$log2.fold_change.<-as.numeric(sapply(dg$log2.fold_change, fix_lfc))#
+#
+contrast<-"WT_vs_FN"#
+#
+# Load in DEGs#
+dg<-read.csv(dataFile)#
+print(paste("############ FILTER DEG: ",contrast, "##########"))	#
+# Setup for RPKM Filtering Criteria#
+names(dg)[grep("^value_", names(dg))]<-paste(unlist(strsplit(contrast,"_vs_")), "_Average_RPKM", sep="")#
+dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )#
+dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)#
+# Get Statistically Significant Genes#
+ds<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05) # & Cpm.Present == T) -- CPM Filter already applied#
+#
+# Get Biologically significant genes based on the following criteria	#
+db<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)#
+print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$gene))))#
+print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$gene))))#
+print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$gene))))#
+print("")#
+#
+# Build Excel Workbook#
+#wb<-createWorkbook()#
+wb<-loadWorkbook('Description_Template.xlsx')#
+tx<-createStyle(numFmt="@")#
+#
+tables<-list(#
+	`All Genes`=dg,#
+	`Statistically Significant`=ds,#
+	`Biologically Significant`=db#
+)#
+#
+for(i in names(tables)){#
+      addWorksheet(wb,i)#
+      print(nrow(tables[[i]]))#
+      cells<-expand.grid(row=nrow(tables[[i]]), col=grep("gene", names(tables[[i]])))#
+      addStyle(wb, i, rows=cells$row, cols=cells$col, style=tx)#
+      writeData(wb, i, tables[[i]])#
+}#
+#
+saveWorkbook(wb, paste(contrast, "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		#
+#
+print(sessionInfo())
+# Purpose: Prepare DEG Tables filtered for Statistical and Biological Significance#
+# Created: April 11, 2019#
+# Author: Adam Faranda#
+#
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#
+wd<-getwd()#
+# Import data table and clean up log2.fold_change. column#
+dataFile<-list.files(pattern="RNA_seq_Unoperated_wt_fn.csv")#
+dg<-read.csv(dataFile, stringsAsFactors=F)#
+#
+for(i in names(dg)){#
+	print(paste(i, "Class:", class(dg[,i])))#
+}#
+#
+# Function converts 'inf' and '#NAME?' to 'Inf' and '-Inf'#
+fix_lfc<-function(x){#
+	if(!is.na(x)){#
+		if(x == 'inf') {#
+			return('Inf')#
+		} #
+		else if(x == '#NAME?'){#
+			return ('-Inf')#
+		} #
+		else {#
+			return (x)#
+		}#
+	}#
+	else { return(NA)}#
+}#
+#
+dg$log2.fold_change.<-as.numeric(sapply(dg$log2.fold_change, fix_lfc))#
+#
+contrast<-"WT_vs_FN"#
+#
+print(paste("############ FILTER DEG: ",contrast, "##########"))	#
+# Setup for RPKM Filtering Criteria#
+names(dg)[grep("^value_", names(dg))]<-paste(unlist(strsplit(contrast,"_vs_")), "_Average_RPKM", sep="")#
+dg$RPKM_gt2_Either_Cond<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) (x[1] > 2) |(x[2] > 2) )#
+dg$RPKM_Diff_gt2<-apply(dg[,grep("_Average_RPKM", names(dg))], 1, function(x) abs(x[1]-x[2]) > 2)#
+# Get Statistically Significant Genes#
+ds<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05) # & Cpm.Present == T) -- CPM Filter already applied#
+#
+# Get Biologically significant genes based on the following criteria	#
+db<-dg %>% filter(abs(log2.fold_change.) > 1 & q_value < 0.05 & RPKM_gt2_Either_Cond == T & RPKM_Diff_gt2 == T)#
+print(paste("Rowcount before join: ", nrow(df),"Rowcount after join: ", nrow(dg), "Unique GeneID: ", length(unique(dg$gene))))#
+print(paste("Rowcount Stat Sig.: ", nrow(ds), "Stat Sig Unique GeneID: ", length(unique(ds$gene))))#
+print(paste("Rowcount Biol Sig.: ", nrow(db), "Biol Sig Unique GeneID: ", length(unique(db$gene))))#
+print("")#
+#
+# Build Excel Workbook#
+#wb<-createWorkbook()#
+wb<-loadWorkbook('Description_Template.xlsx')#
+tx<-createStyle(numFmt="@")#
+#
+tables<-list(#
+	`All Genes`=dg,#
+	`Statistically Significant`=ds,#
+	`Biologically Significant`=db#
+)#
+#
+for(i in names(tables)){#
+      addWorksheet(wb,i)#
+      print(nrow(tables[[i]]))#
+      cells<-expand.grid(row=nrow(tables[[i]]), col=grep("gene", names(tables[[i]])))#
+      addStyle(wb, i, rows=cells$row, cols=cells$col, style=tx)#
+      writeData(wb, i, tables[[i]])#
+}#
+#
+saveWorkbook(wb, paste(contrast, "Differentially_Expressed_Genes.xlsx", sep="_"), overwrite=T)		#
+#
+print(sessionInfo())
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+library(biomaRt)#
+#
+wd<-getwd()
+dataFile<-list.files(pattern="Duncan_wt_fn.csv")
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#library(org.Mm.eg.db)#
+#
+wd<-getwd()#
+outDir<-paste(wd,'DiffExp', sep="/")#
+# Import data tables#
+setwd(outDir)#
+degDataFiles<-list.files(pattern="expressedTags-all.txt$")
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#library(org.Mm.eg.db)#
+#
+wd<-getwd()#
+outDir<-paste(wd,'DiffExp', sep="/")#
+# Import data tables#
+setwd(outDir)#
+degDataFiles<-list.files(pattern="expressedTags-all.txt$")
+getwd()
+setwd('/Users/afaranda/Documents/LEC_Time_Series')
+# Setup Environment#
+library(dplyr)#
+library(openxlsx)#
+#library(org.Mm.eg.db)#
+#
+wd<-getwd()#
+outDir<-paste(wd,'DiffExp', sep="/")#
+# Import data tables#
+setwd(outDir)#
+degDataFiles<-list.files(pattern="expressedTags-all.txt$")
+degDataFiles
+paste("..", #
+			list.files("../", pattern=descName(contrast)), #
+			sep="/"#
+		)
