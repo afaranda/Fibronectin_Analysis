@@ -110,7 +110,7 @@ for (dataFile in degDataFiles){
 			sep="/"
 		)
 	)
-	tx<-createStyle(numFmt="@")
+	tx<-createStyle(numFmt="TEXT")
 	writeData(wb, 1, degTable, startCol=2, startRow=24,colNames=F) # Add DEG counts to main page
 	
 	tables<-list(
