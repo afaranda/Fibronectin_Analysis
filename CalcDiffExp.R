@@ -76,12 +76,14 @@ print(paste("Total Annotation Rows: ", nrow(result), "Unique GeneID: ", length(u
 # Define Replicate Groups
 sampleGroups<-list(
  	WT_0_Hour=c("S1", "S2", "S3"),
+ 	WT_24_Hour=c("S4", "S5", "S6"),
  	WT_48_Hour=c("S7", "S8", "S9"),
  	FN_0_Hour=c("S10", "S11", "S12"),
  	FN_48_Hour=c("S13", "S14", "S15")
 )
  
 pairwiseContrasts<-list(
+  WT_0_Hour_vs_WT_24_Hour = c('WT_0_Hour', 'WT_24_Hour'),
 	WT_0_Hour_vs_WT_48_Hour = c('WT_0_Hour', 'WT_48_Hour'),
 	FN_0_Hour_vs_FN_48_Hour = c('FN_0_Hour', 'FN_48_Hour'),
 	WT_0_Hour_vs_FN_0_Hour = c('WT_0_Hour', 'FN_0_Hour'),
